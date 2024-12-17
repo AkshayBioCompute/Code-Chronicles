@@ -1,0 +1,122 @@
+
+---
+title: "Data Wrangling with dplyr and tidyr"
+output: html_document
+---
+
+## Introduction
+
+This document demonstrates various data wrangling operations using the `dplyr` and `tidyr` packages in R. The operations include filtering, selecting, adding new columns, summarizing, sorting, handling missing values, merging datasets, and reshaping data.
+
+## Step 1: Create Synthetic Data
+
+We begin by creating a synthetic dataset using the `tibble` function.
+
+```{r}
+library(dplyr)
+library(tidyr)
+
+# Create synthetic data
+set.seed(123)
+df <- tibble(
+  ID = 1:10,
+  Name = c("Alice", "Bob", "Charlie", "David", "Eva", "Frank", "Grace", "Hannah", "Ian", "Jane"),
+  Age = sample(18:60, 10, replace = TRUE),
+  Gender = sample(c("Male", "Female"), 10, replace = TRUE),
+  Salary = sample(30000:80000, 10, replace = TRUE)
+)
+
+# Print the original dataframe
+df
+```
+
+## Step 2: Data Wrangling Operations
+
+### 2.1 Filter rows where Age > 30
+
+We filter the rows where `Age` is greater than 30.
+
+```{r}
+# Filter rows where Age > 30
+filtered_df <- df %>% filter(Age > 30)
+filtered_df
+```
+
+### 2.2 Select specific columns (Name and Age)
+
+We select only the `Name` and `Age` columns from the dataset.
+
+```{r}
+# Select columns 'Name' and 'Age'
+selected_columns <- df %>% select(Name, Age)
+selected_columns
+```
+
+### 2.3 Add a new column 'AgeGroup'
+
+We create a new column `AgeGroup` that categorizes individuals as "Adult" or "Child" based on their age.
+
+```{r}
+# Add a new column 'AgeGroup'
+df <- df %>% mutate(AgeGroup = if_else(Age > 18, "Adult", "Child"))
+df
+```
+
+### 2.4 Summarize by grouping Gender and calculating mean Age
+
+We group the data by `Gender` and calculate the mean age for each group.
+
+```{r}
+# Summarize by Gender and calculate mean Age
+summary <- df %>% group_by(Gender) %>% summarize(mean_age = mean(Age, na.rm = TRUE))
+summary
+```
+
+### 2.5 Sort by Age in descending order
+
+We sort the dataset by `Age` in descending order.
+
+```{r}
+# Sort by Age in descending order
+sorted_df <- df %>% arrange(desc(Age))
+sorted_df
+```
+
+### 2.6 Handle missing values in the Salary column
+
+We introduce a missing value (`NA`) in the `Salary` column and then fill it with the mean salary of the non-missing values.
+
+```{r}
+# Handle missing values in the Salary column
+df$Salary[2] <- NA  # Introduce a missing value
+df <- df %>% mutate(Salary = if_else(is.na(Salary), mean(Salary, na.rm = TRUE), Salary))
+df
+```
+
+### 2.7 Merge with another DataFrame
+
+We merge the original dataframe `df` with another dataframe `df2` containing `Department` information. We use a left join on the `ID` column.
+
+```{r}
+# Merge with another DataFrame
+df2 <- tibble(
+  ID = c(1, 2, 3, 4, 5),
+  Department = c("HR", "Finance", "IT", "Marketing", "Sales")
+)
+merged_df <- df %>% left_join(df2, by = "ID")
+merged_df
+```
+
+### 2.8 Pivot DataFrame
+
+We pivot the dataset to widen it, spreading `Salary` values across new columns based on the `AgeGroup`.
+
+```{r}
+# Pivot the DataFrame
+pivot_df <- df %>% pivot_wider(names_from = AgeGroup, values_from = Salary, values_fn = mean)
+pivot_df
+```
+
+## Conclusion
+
+This document demonstrated several essential data wrangling operations in R using the `dplyr` and `tidyr` packages, including filtering, selecting, transforming, summarizing, and reshaping data.
